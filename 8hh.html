@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Examples</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link href="" rel="stylesheet">
+<style>
+*{margin:0;padding:0;}
+ul,li{list-style:none;}
+#ul{border-right:1px solid #000;border-bottom:1px solid #000;overflow:hidden;margin:50px auto;background:url('img/bg.jpg') no-repeat;background-size:cover;}
+#ul li{border-top:1px solid #000;border-left:1px solid #000;float:left;width:50px;height:50px;color:#fff;}
+#ul li.active{ animation:.5s infinite linear flash; -webkit-animation:.5s infinite linear flash;}
+@keyframes flash{
+	0%{ opacity:0.1;}
+	50%{ opacity:1;}
+	100%{ opacity:0.1;}
+}
+@-webkit-keyframes flash{
+	0%{ opacity:0.1;}
+	50%{ opacity:1;}
+	100%{ opacity:0.1;}
+}
+</style>
+</head>
+<body>
+<ul id="ul"></ul>
+<script>
+var ul = document.getElementById("ul");
+var li = ul.getElementsByTagName("li");
+
+var rows = cols = 10;
+var mapLen = rows*cols;
+var gridW = 50;
+var qNum = 10; //皇后
+var iCount = 0;
+var posArr = [];
+var posArrAll = [];
+
+init();
+
+function init(){
+	createMap();
+	setContainerWidth();
+	setQueen(0);
+	showImg();
+}
+
+function setContainerWidth() {
+	ul.style.width = (gridW+1)*cols+"px";
+}
+
+function createMap(){
+	var frame = document.createDocumentFragment();
+	for(var i=0;i<mapLen;i++) {
+		var createLi = document.createElement("li");
+		createLi.index = -1;
+		frame.appendChild(createLi);
+		createLi = null;
+	}
+	ul.appendChild(frame);
+	for(var i=0;i<qNum;i++) {
+		for(var j = 0;j<qNum;j++) {
+			li[i*qNum+j].x = i;
+			li[i*qNum+j].y = j;
+			//li[i*qNum+j].innerHTML = i+","+j
+		}
+	}
+}
+
+function setQueen(q) {
+
+	if(q == qNum) {
+		posArrAll.push(posArr.concat());
+		iCount++;
+		return;
+	}
+
+	for(var i=0;i<qNum;i++){
+		if(li[q*qNum + i].index==-1) {
+			li[q*qNum + i].index = q;
+			posArr.push(li[q*qNum + i]);
+			//li[q*qNum + i].innerHTML = q;
+		
+			var x = li[q*qNum + i].x;
+			var y = li[q*qNum + i].y;
+			for(var j=0;j<li.length;j++){
+				if(li[j].index==-1 && (li[j].y==y || li[j].x==x || (li[j].x - li[j].y == x - y) || (li[j].x + li[j].y == x + y))) {
+					li[j].index = q;
+					//li[j].innerHTML = q;
+				}
+			}
+			setQueen(q+1);
+
+			//回溯
+			posArr.pop();
+			for(var j=0;j<li.length;j++) {
+				if(li[j].index == q) {
+					li[j].index = -1;
+				}
+			}
+
+		}
+	}
+}
+
+function showImg(){
+	
+	change();
+	setInterval(change,2000);
+	
+	function change(){
+		
+		for(var i=0;i<li.length;i++){
+			li[i].style.backgroundImage = '';
+			li[i].className = '';
+		}
+		
+		var randomLi = posArrAll[ Math.floor(posArrAll.length * Math.random()) ];
+		
+		for(var i=0;i<randomLi.length;i++){
+			randomLi[i].style.backgroundImage = 'url(img/'+ Math.floor((Math.random()*11 + 1)) +'.jpg)';
+			randomLi[i].className = 'active';
+			randomLi[i].style.animationDelay = -Math.random()*2 + 's';
+			randomLi[i].style.webkitAnimationDelay = -Math.random()*2 + 's';
+		}
+		
+	}
+	
+}
+
+</script>
+</body>
+</html>
