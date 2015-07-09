@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Examples</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<style>
+*{margin:0;padding:0;}
+ul,li{list-style:none;}
+#ul{border-right:1px solid #000;border-bottom:1px solid #000;overflow:hidden;margin:50px auto;}
+#ul li{border-top:1px solid #000;border-left:1px solid #000;float:left;width:20px;height:20px;}
+#ul .sdot{background-color:green;}
+#ul .edot{background-color:red;}
+#ul .dot{background-color:blue;}
+#start{position:absolute;left:50%;margin-left:-50px;width:100px;}
+</style>
+</head>
+<body>
+<ul id="ul"></ul>
+<input type="button" value="开始寻路" id="start">
+<script>
+
+//A*算法 查找最近路径
+
+var ul = document.getElementById("ul");
+var li = ul.getElementsByTagName("li");
+var start = document.getElementById("start");
+var sdot = document.getElementsByClassName("sdot");
+var edot = document.getElementsByClassName("edot");
+var map = [ 
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,1,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,3,3,3,3,0,3,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+];
+var perRows = 20;
+var mapLen = map.length;
+var rows = mapLen/perRows;
+var cols = mapLen/rows;
+var gridW = 20;
+var openArr = []; //排序估价函数
+var closeArr = []; //排除干扰节点
+var emptyArr = [];
+var push = emptyArr.push;
+var pop = emptyArr.pop;
+var unshift = emptyArr.unshift;
+var shift = emptyArr.shift;
+var sort = emptyArr.sort;
+
+init();
+
+function init(){
+	createMap();
+	setContainerWidth();
+	start.onclick = openFn;
+}
+function setContainerWidth() {
+	ul.style.width=perRows*(gridW+1)+"px";
+}
+function createMap() {
+	var i = 0,
+		len = map.length,
+		frame = document.createDocumentFragment();
+	for(;i<len;i++) {
+		var cli = document.createElement("li");
+		switch(map[i]){
+			case 1:
+				cli.className="sdot";
+				push.call(openArr, cli);
+				break;
+			case 2:
+				cli.className="edot";
+				break;
+			case 3:
+				cli.className="dot";
+				push.call(closeArr, cli);
+				break;
+		}
+		frame.appendChild(cli);
+	}
+	ul.appendChild(frame);
+
+}
+
+function openFn() {
+	var now = shift.call(openArr);
+
+	if(now==edot[0]) {
+		showLine();
+		return; 
+	}
+
+	closeFn(now);
+
+	findLi(now);
+
+	sort.call(openArr, sortArr("num"))
+
+	console.log(openArr);
+
+	openFn();
+}
+
+function sortArr(proto) {
+	return function(v1, v2){
+		return v1[proto]-v2[proto]
+	}
+}
+
+function findLi(n) {
+	var ret = [],
+		i = 0,
+		len = li.length;
+	for(;i<len;i++) {
+		if(filter(li[i])) {
+			push.call(ret, li[i]);
+		}
+	}
+
+	function filter(n) {
+		for(var i=0;i<closeArr.length;i++) {
+			if(closeArr[i]==n) {
+				return false;
+			}
+		}
+		for(var i=0;i<openArr.length;i++) {
+			if(openArr[i]==n) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	for(var i=0;i<ret.length;i++) {
+		var isLeft = (Math.abs(n.offsetLeft-ret[i].offsetLeft)<=(gridW+1)),
+			isTop = (Math.abs(n.offsetTop-ret[i].offsetTop)<=(gridW+1));
+		
+		if(isLeft && isTop) {
+			ret[i].num = f(ret[i]);
+			ret[i].prev = n;
+			push.call(openArr, ret[i]);
+		}
+	}
+}
+
+function showLine() {
+	var last = pop.call(closeArr),
+		index = 0;
+		ret = [];
+
+	findPrev(last);
+	function findPrev(n) {
+		unshift.call(ret, n);
+		if(n==sdot[0]) return;
+		findPrev(n.prev);
+	}
+
+	(function runLine(){
+		if(index>=ret.length-1) return;
+		index++;
+		ret[index].style.backgroundColor = "red";
+		setTimeout(runLine, 500)
+	})()
+
+}
+
+function closeFn(now) {
+	push.call(closeArr, now);
+}
+
+function f(n) {
+	return g(n)+h(n);
+}
+
+function g(n) {
+	var a = sdot[0].offsetLeft - n.offsetLeft,
+		b = sdot[0].offsetTop - n.offsetTop;
+	return Math.sqrt(a*a+b*b);
+}
+
+function h(n) {
+	var a = edot[0].offsetLeft - n.offsetLeft,
+		b = edot[0].offsetTop - n.offsetTop;
+	return Math.sqrt(a*a+b*b);
+}
+</script>
+</body>
+</html>
